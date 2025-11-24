@@ -7,6 +7,7 @@ import { BookEntity } from '../lib/azureStorage';
 export default function Home() {
   const [books, setBooks] = useState<BookEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchBooks();
@@ -39,6 +40,11 @@ export default function Home() {
     }
   };
 
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    book.author.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container">
       <Head>
@@ -52,16 +58,32 @@ export default function Home() {
         </Link>
       </nav>
 
+      <div style={{ marginBottom: '2rem' }}>
+        <input
+          type="text"
+          placeholder="Search by title or author..."
+          className="form-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       {loading ? (
         <p>Loading library...</p>
-      ) : books.length === 0 ? (
+      ) : filteredBooks.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '4rem', color: '#888' }}>
-          <p>Your library is empty.</p>
-          <p>Start by adding some books!</p>
+          {books.length === 0 ? (
+            <>
+              <p>Your library is empty.</p>
+              <p>Start by adding some books!</p>
+            </>
+          ) : (
+            <p>No books match your search.</p>
+          )}
         </div>
       ) : (
         <div className="grid">
-          {books.map((book) => (
+          {filteredBooks.map((book) => (
             <BookCard
               key={book.rowKey}
               title={book.title}
